@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd 
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	<http:listener-config name="HTTP_Listener_Config" doc:name="HTTP Listener config" doc:id="454f6408-60bc-4ce6-b9e7-bf68fbc73d23">
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+		<file:config name="File_Config" doc:name="File Config" doc:id="092546ec-2c4f-45b3-9365-04c7deb66804" >
+		<file:connection workingDir="C:\Users\Shivani\OneDrive\Desktop\files" />
+	</file:config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="7d7877ab-fd3b-4f6a-84ff-6ccc6da4813d" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="root" database="mydb" />
+	</db:config>
+	
+</mule>

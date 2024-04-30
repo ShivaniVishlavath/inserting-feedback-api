@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="inserting-feedback-data-api-test-suite.xml" />
+	<munit:test name="bulk-inserting-feedback-data-flow-success-test-suite" doc:id="bbefaaa3-19c1-4547-a312-f4a771ec9846" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock : Read Feedbacks Csv File" doc:id="b0e56da5-71ad-4346-89ed-593af6a3b86c" processor="file:read">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Read Feedback CSV" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[%dw 2.0&#10;output application/csv&#10;&#10;---&#10;&#10;readUrl('classpath://response/mock_feedbacks_csv_file_response.dwl','application/json')]" mediaType="application/csv" encoding="UTF-8" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock : Bulk Insert Feedback Details" doc:id="396d13aa-7ba8-428d-83b8-a57e9ee50904" processor="db:bulk-insert">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Bulk Insert Feedback Details" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[%dw 2.0&#10;output application/java&#10;&#10;---&#10;&#10;readUrl('classpath://response/mock_bulk_insert_response.dwl','application/json')]" mediaType="application/java" encoding="UTF-8" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="bulk-inserting-feedback-data-flow" doc:id="24212885-0195-4abd-b086-68425771f759" name="bulk-inserting-feedback-data-flow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:verify-call doc:name="End logger" doc:id="a9908dd5-5dc0-4c9a-a6b1-8b0adc995902" processor="logger" atLeast="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="END" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="bulk-inserting-feedback-data-flow-db-connectivity-error-test-suite" doc:id="bf93ff9b-9925-44e8-bd1e-1e958a2048f0" description="Test" expectedErrorType="DB:CONNECTIVITY">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock : Read Feedbacks Csv File" doc:id="5a004a50-bf25-4458-8f44-5fbc858657c8" processor="file:read" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Read Feedback CSV File" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[%dw 2.0&#10;output application/csv&#10;&#10;---&#10;&#10;readUrl('classpath://response/mock_feedbacks_csv_file_response.dwl','application/json')]" mediaType="application/csv" encoding="UTF-8" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock : Bulk Insert Feedback Details" doc:id="11d25235-ebc0-4eeb-b20a-25ff2df9434c" processor="db:bulk-insert" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Bulk Insert Feedback Details" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="DB:CONNECTIVITY" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="bulk-inserting-feedback-data-flow" doc:id="19b09cff-bef0-47fc-a8c4-7b8ff41f4549" name="bulk-inserting-feedback-data-flow" />
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:verify-call doc:name="Error Response" doc:id="21041297-4a53-46ae-ab2c-f61bd52fd4f0" processor="ee:transform" atLeast="1" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Error Response" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="bulk-inserting-feedback-data-flow-file-connectivity-error-test-suite" doc:id="5467e962-fc1e-43ed-bff7-46c4d97f9d0e" description="Test" expectedErrorType="FILE:CONNECTIVITY">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock : Read Feedbacks Csv File" doc:id="0a8e41aa-efc8-48fe-8c71-04b8b64a41d1" processor="file:read" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Read Feedback CSV File" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="FILE:CONNECTIVITY" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="bulk-inserting-feedback-data-flow" doc:id="71c7b0d7-eaea-444f-9cd2-b2811b604b65" name="bulk-inserting-feedback-data-flow" />
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:verify-call doc:name="Error Response" doc:id="190a81a2-2f4a-4c1b-817f-1c9b5dfbcbbe" processor="ee:transform" atLeast="1" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Error Response" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="bulk-inserting-feedback-data-flow-db-bad-sql-syntax-error-test-suite" doc:id="31d19bae-3e74-4a2d-95c9-abbd87f58c27" description="Test" expectedErrorType="DB:BAD_SQL_SYNTAX">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock : Read Feedbacks Csv File" doc:id="f8cb1c59-b5a9-4eaf-901d-373575f3027d" processor="file:read" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Read Feedback CSV File" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[%dw 2.0&#10;output application/csv&#10;---&#10;readUrl('classpath://response/mock_feedbacks_csv_file_response.dwl','application/json')]" mediaType="application/csv" encoding="UTF-8" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock : Bulk Insert Feedback Details" doc:id="72edaa2d-d39a-4a9c-9e1c-bdf1d6367cb5" processor="db:bulk-insert" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Bulk Insert Feedback Details" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="DB:BAD_SQL_SYNTAX" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="bulk-inserting-feedback-data-flow" doc:id="2747e4cd-4fe7-41e2-95cf-95ff95ea3331" name="bulk-inserting-feedback-data-flow" />
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:verify-call doc:name="Error Response" doc:id="67facd1d-0806-4c2a-ad74-633257806f5b" processor="ee:transform" atLeast="1" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Error Response" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="bulk-inserting-feedback-data-flow-any-error-test-suite" doc:id="9a9b61a3-051f-41b4-b0f4-c05ec18d7c30" description="Test" expectedErrorType="DB:QUERY_EXECUTION">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock : Read Feedbacks Csv File" doc:id="21cbe8eb-8ee1-4ff8-984b-a8e50fb79655" processor="file:read" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Read Feedback CSV File" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[%dw 2.0&#10;output application/csv&#10;&#10;---&#10;&#10;readUrl('classpath://response/mock_feedbacks_csv_file_response_with_null_values.dwl','application/json')]" mediaType="application/csv" encoding="UTF-8" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock : Bulk Insert Feedback Details" doc:id="325dc46a-6a5e-4485-8846-111557720a41" processor="db:bulk-insert" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Bulk Insert Feedback Details" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="DB:QUERY_EXECUTION" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="bulk-inserting-feedback-data-flow" doc:id="227a1ca5-6a0e-424e-9a7c-f63e3ca5f979" name="bulk-inserting-feedback-data-flow" />
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:verify-call doc:name="Error Response" doc:id="efca9433-05d1-4240-9aed-972cea436f96" processor="ee:transform" atLeast="1" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Error Response" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+
+
+</mule>

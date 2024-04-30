@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+
+	<flow name="bulk-inserting-feedback-data-flow" doc:id="55dc146c-d974-4985-b045-1f665b6636de" >
+		<http:listener doc:name="Listener" doc:id="6289e11d-b735-413f-9640-e1c53be8ce22" config-ref="HTTP_Listener_Config" path="bulkInsert" >
+			<http:error-response >
+				<http:body ><![CDATA[#[payload]]]></http:body>
+			</http:error-response>
+		</http:listener>
+		<logger level="INFO" doc:name="START" doc:id="0079e031-7cd9-4850-9bdb-0233f7fd3d31" message="Flow started" />
+		<file:read doc:id="cf688050-e005-4807-b5cc-c4e747f16695"  path="test_feedbacks.csv" doc:name="Read Feedback CSV File" config-ref="File_Config"/>
+		<ee:transform doc:name="Csv to Json" doc:id="f51efdad-ed11-43df-b153-d83d40f47a1c" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map {
+	"customer_name": $.customerName,
+	"feedback_message":$.feedbackMessage,
+	"rating":$.rating
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<db:bulk-insert doc:id="4fa5cd31-54a9-40e0-8cb0-50264b77c1d5" doc:name="Bulk Insert Feedback Details" config-ref="Database_Config">
+			<db:sql><![CDATA[INSERT INTO feedback (CUSTOMER_NAME, FEEDBACK_MESSAGE, RATING)
+    VALUES (:customer_name, :feedback_message, :rating)]]></db:sql>
+		</db:bulk-insert>
+		<ee:transform doc:name="Success Response" doc:id="0e7f6ae1-285e-4585-b3e8-a060676e9026" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "All Records Inserted successfully"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="END" doc:id="cc42313e-c198-4614-b2d3-4833a508c4fd" message="Flow completed" />
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="1bdeed56-5d9d-47c1-ae0b-898118f5e2ae" type="DB:CONNECTIVITY">
+				<ee:transform doc:name="Error Response" doc:id="1d308f85-d403-4f7f-a365-484bdd3c6030" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "Error while connecting to the database"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="0effa31f-dff9-41e6-89fd-c6e9645e00d8" type="FILE:CONNECTIVITY" >
+				<ee:transform doc:name="Error Response" doc:id="2e1d27af-c0b3-4300-94d0-e868d1d20768" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "Error while connecting to the file"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="c1119391-8949-4d54-ae66-ea73f0dc4181" type="DB:BAD_SQL_SYNTAX" >
+				<ee:transform doc:name="Error Response" doc:id="c1652205-33cc-45d8-9706-d5e5bb536aa5" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "Error in SQL syntax"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="111a5a8e-e11c-4925-9e26-2e9e79813bfe" type="ANY" >
+				<ee:transform doc:name="Error Response" doc:id="4746285c-5029-4222-8549-a7821d50db0a" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "Unexpected Error occured"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+</mule>
