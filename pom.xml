@@ -37,7 +37,22 @@
 							<artifactId>mysql-connector-java</artifactId>
 						</sharedLibrary>
 					</sharedLibraries>
+					<cloudHubDeployment>
+						<uri>https://anypoint.mulesoft.com/</uri>
+						<muleVersion>${app.runtime}</muleVersion>
+						<username>${username}</username>
+						<password>${password}</password>
+						<applicationName>${project.artifactId}</applicationName>
+						<environment>dev</environment>
+						<workerType>${workerType}</workerType>
+						<workers>1</workers>
+						<objectStoreV2>true</objectStoreV2>
+						<properties>
+						    <key>value</key>
+						 </properties>
+					</cloudHubDeployment>
 				</configuration>
+				
 			</plugin>
 			<plugin>
 				<groupId>com.mulesoft.munit.tools</groupId>
