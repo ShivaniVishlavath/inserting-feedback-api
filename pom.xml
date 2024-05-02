@@ -71,6 +71,9 @@
 				<configuration>
 					<coverage>
 						<runCoverage>true</runCoverage>
+						<ignoreFiles>
+					        <ignoreFile>inserting-feedback-data-api-test-suite.xml</ignoreFile>
+					    </ignoreFiles>
 						<formats>
 							<format>html</format>
 						</formats>
